@@ -3,8 +3,6 @@ package com.spring.data.repository;
 import com.spring.data.entity.City;
 import org.springframework.stereotype.Repository;
 
-import javax.persistence.EntityManager;
-import javax.persistence.PersistenceContext;
 import java.util.List;
 
 /**
@@ -12,10 +10,7 @@ import java.util.List;
  */
 
 @Repository
-public class CityRepositoryImpl implements CityRepository {
-
-    @PersistenceContext
-    private EntityManager entityManager;
+public class CityRepositoryImpl extends BaseRepository implements CityRepository {
 
     @Override
     public List<City> findAll() {

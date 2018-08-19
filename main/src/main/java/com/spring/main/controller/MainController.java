@@ -1,15 +1,23 @@
 package com.spring.main.controller;
 
+import com.google.common.io.BaseEncoding;
 import com.spring.data.entity.City;
+import com.spring.data.entity.User;
 import com.spring.data.repository.CityRepository;
 import com.spring.data.repository.TestService;
+import com.spring.data.service.UserService;
 import com.spring.main.TestProperties;
+import com.spring.main.crypto.HMAC;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.transaction.Transactional;
+import java.nio.charset.Charset;
 import java.util.List;
 
 /**
@@ -19,6 +27,8 @@ import java.util.List;
 @RestController
 public class MainController {
 
+    private final Logger logger = LoggerFactory.getLogger(MainController.class);
+
     @Autowired
     private CityRepository cityRepository;
 
@@ -27,6 +37,9 @@ public class MainController {
 
     @Autowired
     private TestProperties testProperties;
+
+    @Autowired
+    private UserService userService;
 
     @Value("${environment}")
     private String environment;
@@ -45,7 +58,33 @@ public class MainController {
         System.out.println("testProperties: " + testProperties);
         System.out.println("Current environment: " + environment);
 
+        String username = "testUsername";
+        String password = "testPassword";
+//        createUser(username, password);
+        login(username, password);
+
         return cityList.toString();
+    }
+
+    private void createUser(String username, String password) {
+        logger.info("Create user, username: {}, password: {}", username, password);
+        userService.create(username, password, RandomStringUtils.randomAlphabetic(5), RandomStringUtils.randomAlphabetic(5) + "@test.com");
+    }
+
+    private Boolean login(String username, String password) {
+        logger.info("User login by using username: {}, password: {}", username, password);
+        User user = userService.findOneByUsername(username);
+        Boolean loginResult = user.getPasswordHash().equals(hashPassword(password, user.getSalt()));
+        logger.info("Login result: {}", loginResult);
+        return loginResult;
+    }
+
+
+    private String hashPassword(String password, String salt) {
+        HMAC hmac = new HMAC();
+        hmac.setSecretKey(salt.getBytes(Charset.forName("UTF-8")));
+        byte[] bytes = hmac.digest(password);
+        return BaseEncoding.base64().encode(bytes);
     }
 
 
