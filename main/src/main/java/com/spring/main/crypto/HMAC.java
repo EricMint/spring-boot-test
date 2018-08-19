@@ -14,6 +14,8 @@ import java.security.NoSuchAlgorithmException;
  * http://en.wikipedia.org/wiki/Message_authentication_code
  *
  * @author anonymous
+ *
+ * Rplaced by com.spring.data.util.HMAC.java
  */
 public class HMAC {
     private byte[] key;
